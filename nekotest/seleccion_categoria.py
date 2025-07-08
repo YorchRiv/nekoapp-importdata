@@ -6,7 +6,7 @@ import time
 def seleccionar_categoria(driver, nombre_categoria, max_scroll=8, timeout=5):
     # 1. Click en "Select category"    
     element = WebDriverWait(driver, timeout).until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//android.view.View[@content-desc="Select category"]'))
+        EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.View[@content-desc="Category"]/following-sibling::android.view.View)[1]'))
     )
     element.click()
     time.sleep(0.5)
