@@ -9,7 +9,7 @@ def seleccionar_cuenta(driver, nombre_cuenta, timeout=10, max_scroll=5):
     # Espera a que aparezca el campo "Select account"
     element = wait.until(
         EC.element_to_be_clickable(
-            (AppiumBy.XPATH, '(//android.view.View[@content-desc="Account"]/following-sibling::android.view.View)[1]')
+            (AppiumBy.XPATH, '(//android.view.View[@content-desc="Account" or @content-desc="Deposit Account"]/following-sibling::android.view.View)[1]')
         )
     )
     element.click()

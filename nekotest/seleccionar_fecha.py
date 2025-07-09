@@ -21,7 +21,7 @@ def seleccionar_fecha_datepicker(driver, fecha_str):
         # Alternativa: busca el primer clickable visible después de Transaction Date
         campo_fecha = driver.find_element(
             AppiumBy.XPATH,
-            '//android.view.View[@content-desc="Transaction Date"]/following-sibling::android.view.View'
+            '//android.view.View[@content-desc="Transaction Date" or @content-desc="Payday"]/following-sibling::android.view.View'
         )
     campo_fecha.click()
     time.sleep(0.5)
