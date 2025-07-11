@@ -7,10 +7,50 @@ from ingreso_comentario import ingresar_comentario
 from guardar_gasto import guardar_gasto
 from seleccionar_fecha import seleccionar_fecha_datepicker
 from appium.webdriver.common.appiumby import AppiumBy
-import time
-from movimientos_data import movimientos
 from util import volver_a_home
+from movimientos_data import movimientos as movimientos_default
 
+import csv
+import os
+import time
+
+def leer_movimientos_csv(path):
+    movimientos = []
+    with open(path, newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            movimientos.append({
+                'id': row['id'],
+                'tipo': row['tipo'],
+                'monto': float(row['monto']),
+                'descripcion': row['descripcion'],
+                'comentario': row.get('comentario', ''),
+                'fecha': row['fecha'],
+                'cuenta': row['cuenta'],
+                'categoria': row['categoria']
+            })
+    return movimientos
+
+# Preguntar al usuario de dónde leer los datos
+print("Selecciona la fuente de movimientos:")
+print("1. Lista interna (movimientos_data.py)")
+print("2. Archivo CSV en ./csv/data.csv")
+
+opcion = input("Ingresa 1 o 2: ").strip()
+
+if opcion == "2":
+    ruta_csv = os.path.join(os.getcwd(), "nekotest", "csv", "data.csv")
+    if os.path.isfile(ruta_csv):
+        movimientos = leer_movimientos_csv(ruta_csv)
+        print(f"[INFO] Se cargaron {len(movimientos)} movimientos desde: {ruta_csv}")
+    else:
+        print(f"[ERROR] No se encontró el archivo: {ruta_csv}")
+        exit(1)
+else:
+    movimientos = movimientos_default
+    print(f"[INFO] Se usará la lista por defecto con {len(movimientos)} movimientos.")
+
+# Inicia Appium
 driver = get_driver()
 
 try:
@@ -19,47 +59,29 @@ try:
             t_inicio = time.time()
 
             # "+" botón
-            element = driver.find_element(
-                AppiumBy.XPATH, 
+            driver.find_element(
+                AppiumBy.XPATH,
                 '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.widget.Button'
-            )
-            element.click()
+            ).click()
             time.sleep(0.5)
 
-            # Condición por tipo de movimiento
             if mov['tipo'] == "Income":
                 print(f"[INFO] ID:{mov['id']} | Movimiento tipo INCOME")
-
-                # Seleccionar "Income"
-                element = driver.find_element(
-                    AppiumBy.XPATH, 
-                    '//android.view.View[contains(@content-desc, "Income")]'
-                )
-                element.click()
+                driver.find_element(AppiumBy.XPATH, '//android.view.View[contains(@content-desc, "Income")]').click()
                 time.sleep(0.5)
-
-                monto_centavos = int(round(mov['monto'] * 100))
-                ingresar_monto(driver, monto_centavos)
+                ingresar_monto(driver, int(round(mov['monto'] * 100)))
                 ingresar_descripcion(driver, mov['descripcion'])
                 ingresar_comentario(driver, mov['comentario'])
                 seleccionar_fecha_datepicker(driver, mov['fecha'])
                 seleccionar_cuenta(driver, mov['cuenta'])
-                seleccionar_categoria(driver, mov['categoria'])  # Opcional: depende si hay categorías para ingresos
+                seleccionar_categoria(driver, mov['categoria'])
                 guardar_gasto(driver)
 
             elif mov['tipo'] == "Expense":
                 print(f"[INFO] ID:{mov['id']} | Movimiento tipo EXPENSE")
-
-                # Seleccionar "Expense"
-                element = driver.find_element(
-                    AppiumBy.XPATH, 
-                    '//android.view.View[contains(@content-desc, "Expense")]'
-                )
-                element.click()
+                driver.find_element(AppiumBy.XPATH, '//android.view.View[contains(@content-desc, "Expense")]').click()
                 time.sleep(0.5)
-
-                monto_centavos = int(round(mov['monto'] * 100))
-                ingresar_monto(driver, monto_centavos)
+                ingresar_monto(driver, int(round(mov['monto'] * 100)))
                 ingresar_descripcion(driver, mov['descripcion'])
                 ingresar_comentario(driver, mov['comentario'])
                 seleccionar_fecha_datepicker(driver, mov['fecha'])
@@ -68,11 +90,10 @@ try:
                 guardar_gasto(driver)
 
             else:
-                print(f"[WARNING] Tipo de movimiento desconocido: {mov['tipo']}. Saltando registro.")
+                print(f"[WARNING] Tipo de movimiento desconocido: {mov['tipo']}. Saltando.")
                 continue
 
-            t_fin = time.time()
-            t_total = t_fin - t_inicio
+            t_total = time.time() - t_inicio
             print(f"[OK] ID:{mov['id']} | {mov['monto']} | {mov['descripcion']} | {mov['cuenta']} | {mov['categoria']} | {mov['fecha']} | {t_total:.2f}s")
             time.sleep(1)
 
