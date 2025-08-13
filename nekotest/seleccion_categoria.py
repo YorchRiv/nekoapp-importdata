@@ -3,7 +3,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from appium.webdriver.common.appiumby import AppiumBy
 import time
 
-def seleccionar_categoria(driver, nombre_categoria, timeout=10, max_scroll=5):
+def seleccionar_categoria(driver, nombre_categoria, timeout=10, max_scroll=10):
     wait = WebDriverWait(driver, timeout)
 
     # Espera y clic en el campo "Select category"
@@ -34,8 +34,9 @@ def seleccionar_categoria(driver, nombre_categoria, timeout=10, max_scroll=5):
                 return  # Éxito: salir
 
         # Scroll rápido
-        driver.swipe(500, 1800, 500, 900, 80)
-        time.sleep(0.15)
+        driver.swipe(500, 1600, 500, 1200, 200)  # Swipe vertical más corto y más lento
+        time.sleep(0.4)  # Espera un poco más para que cargue la vista
+
 
     # Si no se encuentra la categoría
     raise Exception(f'No se encontró la categoría "{nombre_categoria}" tras {max_scroll} scrolls.')

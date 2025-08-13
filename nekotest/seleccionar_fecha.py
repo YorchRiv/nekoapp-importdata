@@ -7,7 +7,7 @@ def seleccionar_fecha_datepicker(driver, fecha_str):
     """
     Selecciona la fecha en el datepicker de la app.
     :param driver: Instancia de Appium.
-    :param fecha_str: Fecha en formato 'YYYY-MM-DD' (ej: '2025-07-17')
+    :param fecha_str: Fecha en formato 'DD/MM/YYYY' (ej: '17/07/2025')
     """
     # 1. Abre el modal del calendario dando click en el campo de la fecha
     time.sleep(0.5)
@@ -26,7 +26,7 @@ def seleccionar_fecha_datepicker(driver, fecha_str):
     campo_fecha.click()
     time.sleep(0.5)
 
-    # 2. Click en el botón para editar la fecha manualmente (icono calendario pequeño, normalmente el único button hijo)
+    # 2. Click en el botón para editar la fecha manualmente (icono calendario pequeño)
     btn_editar_fecha = driver.find_element(
         AppiumBy.XPATH,
         '//android.view.View[contains(@content-desc,"Select date")]/android.view.View/android.widget.Button'
@@ -37,19 +37,17 @@ def seleccionar_fecha_datepicker(driver, fecha_str):
     # 3. Selecciona el campo editable de fecha (EditText)
     edit_fecha = driver.find_element(AppiumBy.CLASS_NAME, 'android.widget.EditText')
     edit_fecha.click()
-    # Limpiar el campo: presiona BACKSPACE varias veces o usa .clear()
     try:
         edit_fecha.clear()
     except:
-        # Si clear falla (a veces en modales), hazlo a mano:
         actual = edit_fecha.text
-        for _ in range(len(actual) + 3):  # 3 extras por si hay residuos invisibles
+        for _ in range(len(actual) + 3):
             edit_fecha.send_keys(Keys.BACKSPACE)
     time.sleep(0.2)
 
-    # 4. Escribe la fecha en formato MM/DD/YYYY (con ceros)
-    fecha_obj = datetime.strptime(fecha_str, "%Y-%m-%d")
-    fecha_manual = fecha_obj.strftime("%m/%d/%Y")  # Con ceros a la izquierda
+    # 4. Convierte la fecha de DD/MM/YYYY a MM/DD/YYYY que es el formato que espera el datepicker
+    fecha_obj = datetime.strptime(fecha_str, "%d/%m/%Y")
+    fecha_manual = fecha_obj.strftime("%m/%d/%Y")
 
     edit_fecha.send_keys(fecha_manual)
     time.sleep(0.5)
