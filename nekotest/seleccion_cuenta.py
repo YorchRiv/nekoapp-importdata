@@ -3,14 +3,29 @@ from selenium.webdriver.support import expected_conditions as EC
 from appium.webdriver.common.appiumby import AppiumBy
 import time
 
-def seleccionar_cuenta(driver, nombre_cuenta, timeout=10, max_scroll=5):
+def seleccionar_cuenta(driver, nombre_cuenta, timeout=10, max_scroll=5, es_destino=False, es_pago_tc=False):
     wait = WebDriverWait(driver, timeout)
 
-    # Espera y click en el campo "Select account"
-    element = wait.until(
-        EC.element_to_be_clickable(
-            (AppiumBy.XPATH, '(//android.view.View[@content-desc="Account" or @content-desc="Deposit Account"]/following-sibling::android.view.View)[1]')
+    # Construir el XPath según el tipo de operación
+    if es_pago_tc:
+        if es_destino:
+            # Para pagos TC, cuando es destino usamos el primer "Select account" (Credit Card)
+            xpath_cuenta = '//android.view.View[@content-desc="Account" or @content-desc="Deposit Account" or @content-desc="Credit Card"]/following-sibling::android.view.View[1]'
+        else:
+            # Para pagos TC, cuando es origen usamos el segundo "Select account" (Pay From)
+            xpath_cuenta = '(//android.view.View[@content-desc="Select account" or @content-desc="Pay From"])[2]'
+    else:
+        # Para transferencias e ingresos/egresos
+        xpath_cuenta = (
+            # Primero buscamos campos específicos de transferencias (From/To Account)
+            f'//android.view.View[@content-desc="{("To" if es_destino else "From")} Account"]/following-sibling::android.view.View[1]'
+            ' | '  # Si no encuentra los anteriores, busca los campos normales
+            '//android.view.View[@content-desc="Account" or @content-desc="Deposit Account"]/following-sibling::android.view.View[1]'
         )
+
+    # Espera y click en el campo de cuenta
+    element = wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, xpath_cuenta))
     )
     element.click()
     time.sleep(0.2)  # Menor espera inicial
