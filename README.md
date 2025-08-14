@@ -18,7 +18,6 @@ Permitir a los usuarios ingresar grandes cantidades de datos históricos o exter
 
 - Python 3
 - Appium
-- Selenium
 
 ## 🎥 Demostración en YouTube
 Puedes ver el script en funcionamiento aquí:  
